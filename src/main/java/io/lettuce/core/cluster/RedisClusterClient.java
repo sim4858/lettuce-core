@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
@@ -351,8 +352,25 @@ public class RedisClusterClient extends AbstractRedisClient {
             seed = this.initialUris;
         } else {
             List<RedisURI> uris = new ArrayList<>();
+            // TODO --begin
+            int K = 10; // get from conf
+            int i = 0;
+            Random rand = new Random();
+            // -- end
             for (RedisClusterNode partition : TopologyComparators.sortByUri(partitions)) {
-                uris.add(partition.getUri());
+                // uris.add(partition.getUri());
+                // TODO Do random sampling (Reservoir sampling)
+                // -- begin
+                if (i < K) {
+                    uris.add(partition.getUri());
+                } else {
+                    int j = rand.nextInt(i-1);
+                    if (j < K) {
+                        uris.set(j, partition.getUri());
+                    }
+                }
+                i++;
+                // -- end
             }
             seed = uris;
         }
